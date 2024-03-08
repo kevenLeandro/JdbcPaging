@@ -1,0 +1,43 @@
+package com.springbatch.jdbcpagingreader.reader;
+
+import javax.sql.DataSource;
+
+import com.springbatch.jdbcpagingreader.dominio.Cliente;
+
+import com.springbatch.jdbcpagingreader.dominio.Transacao;
+import org.springframework.batch.item.database.JdbcPagingItemReader;
+import org.springframework.batch.item.database.PagingQueryProvider;
+import org.springframework.batch.item.database.builder.JdbcPagingItemReaderBuilder;
+import org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+
+@Configuration
+public class JdbcPagingReaderReaderConfig {
+	@Bean
+	public JdbcPagingItemReader<Transacao> jdbcPagingReader(
+		@Qualifier("appDataSource") DataSource dataSource,
+		PagingQueryProvider queryProvider
+	) {
+		return new JdbcPagingItemReaderBuilder<Transacao>()
+			.name("jdbcPagingReader")
+			.dataSource(dataSource)
+			.queryProvider(queryProvider)
+			.pageSize(1000)
+			.rowMapper(new BeanPropertyRowMapper<Transacao>(Transacao.class))
+			.build();
+	}
+
+	@Bean
+	public SqlPagingQueryProviderFactoryBean queryProvider(
+		@Qualifier("appDataSource") DataSource dataSource) {
+			SqlPagingQueryProviderFactoryBean queryProvider = new SqlPagingQueryProviderFactoryBean();
+			queryProvider.setDataSource(dataSource);
+			queryProvider.setSelectClause("select *");
+			queryProvider.setFromClause("from transacao");
+			queryProvider.setSortKey("id");
+			return queryProvider;
+	}
+}
